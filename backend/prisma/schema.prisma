@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Keyword {
+  id        String    @id @default(uuid())
+  word      String    @unique
+  scope     String? // optional tracking scope
+  cloudData String? // AI generated word cloud data: [{name: "word", value: 100}]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  hotspots  Hotspot[]
+}
+
+model Hotspot {
+  id           String   @id @default(uuid())
+  title        String
+  summary      String?
+  heat         Float?
+  platform     String // e.g. weibo, zhihu, baidu, douyin, duckduckgo
+  url          String?
+  isReal       Boolean  @default(false)
+  analysis     String? // AI reasoning
+  tags         String? // Extracted entity keywords, comma separated
+  sourceHash   String? // Hash of the source search results to prevent duplicates
+  publishTime  String? // Real publication time of the article extracted by AI
+  notified     Boolean  @default(false)
+  keywordId    String?
+  keyword      Keyword? @relation(fields: [keywordId], references: [id])
+  discoveredAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model AlertTask {
+  id            String   @id @default(uuid())
+  keyword       String   @unique
+  intervalHours Int      @default(1) // n hours tracking window & notify interval
+  platforms     String   @default("DuckDuckGo,Xiaohongshu,X") // Comma separated platforms
+  notifyMethod  String   @default("webhook") // webhook, email, or wechat
+  webhookUrl    String?
+  email         String?
+  lastRunAt     DateTime? // Track when it was last checked
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  records       AlertRecord[]
+}
+
+model AlertRecord {
+  id           String   @id @default(uuid())
+  title        String
+  summary      String?
+  url          String?
+  platform     String
+  isReal       Boolean  @default(false)
+  credibility  Int      @default(0) // 0-100 score representing credibility/reliability
+  analysis     String?  // AI reasoning for credibility and authenticity
+  notified     Boolean  @default(false)
+  taskId       String
+  task         AlertTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  sourceHash   String?  // To prevent duplicate alerts
+  createdAt    DateTime @default(now())
+}
