@@ -60,8 +60,9 @@ For EACH item:
 1. Determine if this specific article represents a real event happening right now about the keyword.
 2. Extract 3-5 specific entity keywords from this specific article.
 3. Write a concise summary (1-3 sentences) specifically for this article.
-4. Extract or deduce the original "publishTime" (发布时间) of the article from its snippet (e.g., if it says "13 hours ago", convert it to a relative time string like "13小时前" or an exact date if mentioned). If totally unknown, return "未知".
-5. Include the original "url" of the article in the output exactly as provided so we can map it back.
+4. Extract or deduce the original "publishTime" (发布时间). If totally unknown, return "未知".
+5. Estimate the "heatEstimate" (0-100). INCREASE the heat significantly if the snippet mentions high engagement (e.g. "1.5万赞", "3000转发", "100万播放") or if it appears to be from a verified influencer or "大V" (Big V).
+6. Include the original "url" of the article in the output exactly as provided so we can map it back.
 
 IMPORTANT: You MUST respond entirely in Simplified Chinese (简体中文).
 Respond in JSON format with an array of "results":
@@ -117,12 +118,12 @@ export async function generateRefinedWordCloud(keyword: string, hotspots: any[])
 A keyword "${keyword}" was triggered. Here are the collected news snippets:
 ${corpus}
 
-Your task is to generate exactly 30 highly relevant and specific keywords for a Word Cloud visualization of this event.
+Your task is to generate up to 20 highly relevant and specific keywords for a Word Cloud visualization of this event.
 1. Merge synonyms and identical concepts (e.g. if the news is about "王某" but another mentions "王平", merge them to "王平").
 2. DO NOT include generic platform names (e.g., "抖音", "知乎早报", "微博", "百度", "百家号", "搜狐新闻") unless the platform itself is the main subject of the event.
 3. Remove generic useless words like "表示", "今天", "我们", "发现". Keep only nouns, entities, specific actions, and core topics.
 4. Assign a reasonable weight (10 to 100) to each keyword based on its importance and frequency. **CRITICAL TIME DECAY ALGORITHM**: You MUST give significantly higher weights to concepts that appear in recent news (e.g., [今天] or [距今1天前]), and severely penalize/decay the weights of concepts that only appeared in older news (e.g., [距今10天前] or older).
-5. Output exactly 30 keywords.
+5. Output at least 5 and up to 20 keywords. If the text is very short, just extract the core entities.
 
 IMPORTANT: You MUST respond entirely in Simplified Chinese (简体中文).
 Respond in JSON format:
@@ -177,6 +178,7 @@ Your task:
    - A descriptive title
    - A clear, factual summary of the event
    - An assessment of its credibility (0 to 100), based on the source platform and context.
+   - If the text mentions high views (浏览量), forwards (转发量), likes (点赞量), or is posted by a Big V (大V/机构认证), you MUST increase the credibility and note it in the analysis.
    - Your reasoning for the credibility score.
    - Identify the primary source URL if available.
 

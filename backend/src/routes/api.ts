@@ -38,6 +38,19 @@ router.delete('/keywords/:id', async (req, res) => {
   }
 });
 
+router.put('/keywords/:id/toggle', async (req, res) => {
+  try {
+    const kw = await prisma.keyword.findUnique({ where: { id: req.params.id } });
+    const updated = await prisma.keyword.update({
+      where: { id: req.params.id },
+      data: { isActive: !kw?.isActive }
+    });
+    res.json(updated);
+  } catch (e) {
+    res.status(400).json({ error: "Toggle failed" });
+  }
+});
+
 router.get('/hotspots', async (req, res) => {
   const hotspots = await prisma.hotspot.findMany({
     orderBy: { createdAt: 'desc' },
@@ -96,6 +109,19 @@ router.delete('/alerts/tasks/:id', async (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(404).json({ error: "Task not found" });
+  }
+});
+
+router.put('/alerts/tasks/:id/toggle', async (req, res) => {
+  try {
+    const task = await prisma.alertTask.findUnique({ where: { id: req.params.id } });
+    const updated = await prisma.alertTask.update({
+      where: { id: req.params.id },
+      data: { isActive: !task?.isActive }
+    });
+    res.json(updated);
+  } catch (e) {
+    res.status(400).json({ error: "Toggle failed" });
   }
 });
 

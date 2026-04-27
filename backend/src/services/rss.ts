@@ -19,8 +19,8 @@ export async function fetchPlatformHotspots(platformRoute: string, platformName:
       platform: platformName,
       heat: null, // RSS might not have heat directly
     })).slice(0, 10); // Take top 10 from each platform
-  } catch (error) {
-    console.error(`Error fetching RSS for ${platformName}:`, error);
+  } catch (error: any) {
+    console.log(`[RSS Warn] Failed to fetch from ${platformName} (${error.message}). Using fallback data instead.`);
     // Return mock data if RSSHub is blocking us
     return [
       {

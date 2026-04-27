@@ -13,6 +13,7 @@ datasource db {
 model Keyword {
   id        String    @id @default(uuid())
   word      String    @unique
+  isActive  Boolean   @default(true)
   scope     String? // optional tracking scope
   cloudData String? // AI generated word cloud data: [{name: "word", value: 100}]
   createdAt DateTime  @default(now())
@@ -43,6 +44,7 @@ model Hotspot {
 model AlertTask {
   id            String   @id @default(uuid())
   keyword       String   @unique
+  isActive      Boolean  @default(true)
   intervalHours Int      @default(1) // n hours tracking window & notify interval
   platforms     String   @default("DuckDuckGo,Xiaohongshu,X") // Comma separated platforms
   notifyMethod  String   @default("webhook") // webhook, email, or wechat

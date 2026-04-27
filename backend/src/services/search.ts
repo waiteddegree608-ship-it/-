@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio';
 
 const vqdMap = new Map<string, string>();
 
-export async function duckSearch(query: string, page: number = 1) {
+export async function duckSearch(query: string, page: number = 1): Promise<any[]> {
   try {
     const s = (page - 1) * 10;
     let postData = `q=${encodeURIComponent(query)}`;
@@ -54,4 +54,8 @@ export async function duckSearch(query: string, page: number = 1) {
     console.error(`Search error on page ${page}:`, error.message);
     return [];
   }
+}
+
+export async function bingSearch(query: string, page: number = 1): Promise<any[]> {
+  return duckSearch(query, page);
 }

@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendNotification(task: any, events: any[]) {
+export async function sendNotification(task: any, events: any[], wordCloudImgUrl?: string | null) {
   if (!events || events.length === 0) return;
 
   const eventsHtml = events.map(event => `
@@ -25,7 +25,25 @@ export async function sendNotification(task: any, events: any[]) {
     </div>
   `).join('');
 
+  let wordCloudHtml = '';
+  let mailAttachments: any[] = [];
+
   if (task.notifyMethod === 'email' && task.email) {
+    if (wordCloudImgUrl) {
+      try {
+        const response = await axios.get(wordCloudImgUrl, { responseType: 'arraybuffer' });
+        const buffer = Buffer.from(response.data, 'binary');
+        mailAttachments.push({
+          filename: 'wordcloud.png',
+          content: buffer,
+          cid: 'wordcloud_img'
+        });
+        wordCloudHtml = `<div><h3 style="color: #333;">本次扫描热词聚合:</h3><img src="cid:wordcloud_img" alt="Word Cloud" style="max-width: 100%; border-radius: 8px; border: 1px solid #ddd;" /></div><br/>`;
+      } catch (err) {
+        console.error("Failed to download word cloud image for email", err);
+      }
+    }
+
     try {
       await transporter.sendMail({
         from: `"Hotspot Alert" <${config.smtp.user}>`,
@@ -33,8 +51,10 @@ export async function sendNotification(task: any, events: any[]) {
         subject: `[热点通知] 关键词 "${task.keyword}" 发现 ${events.length} 条最新动态`,
         html: `
           <h2>针对您监控的关键词 "${task.keyword}"，发现了以下最新热点：</h2>
+          ${wordCloudHtml}
           ${eventsHtml}
-        `
+        `,
+        attachments: mailAttachments
       });
       console.log(`[Notification] Aggregated email sent to ${task.email}`);
     } catch (e: any) {
