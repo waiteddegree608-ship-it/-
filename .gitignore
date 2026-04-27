@@ -1,0 +1,11 @@
+# Ignore the external data folder
+data/
+
+# Ignore scratch files
+scratch/
+
+# Ignore OS files
+.DS_Store
+
+# Include environment examples
+!.env.example

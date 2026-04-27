@@ -5,6 +5,19 @@ import 'echarts-wordcloud';
 const MIN_RADIUS = 120;
 const MAX_RADIUS = 300;
 
+const mergeSynonyms = (list: any[]) => {
+  for (let i = 0; i < list.length; i++) {
+    if (!list[i].name) continue;
+    for (let j = i + 1; j < list.length; j++) {
+      if (!list[j].name) continue;
+      if (String(list[i].name).includes(String(list[j].name)) || String(list[j].name).includes(String(list[i].name))) {
+        list[i].value += list[j].value;
+        list[j].name = ""; 
+      }
+    }
+  }
+};
+
 const getWordCloudOption = (nodeHotspots: any[], radius: number, keywords: any[], nodeKeywordIds: string[]) => {
   let aiProcessed = false;
   let dataList: any[] = [];
@@ -84,32 +97,13 @@ const getWordCloudOption = (nodeHotspots: any[], radius: number, keywords: any[]
       
     dataList.sort((a, b) => b.value - a.value);
 
-    for (let i = 0; i < dataList.length; i++) {
-      if (!dataList[i].name) continue;
-      for (let j = i + 1; j < dataList.length; j++) {
-        if (!dataList[j].name) continue;
-        if (String(dataList[i].name).includes(String(dataList[j].name)) || String(dataList[j].name).includes(String(dataList[i].name))) {
-          dataList[i].value += dataList[j].value;
-          dataList[j].name = ""; 
-        }
-      }
-    }
+    mergeSynonyms(dataList);
   }
     
   dataList.sort((a, b) => b.value - a.value);
 
   // Synonym merging: AI-like deduplication of overlapping keywords (e.g., "Nature论文" and "Nature")
-  for (let i = 0; i < dataList.length; i++) {
-    if (!dataList[i].name) continue;
-    for (let j = i + 1; j < dataList.length; j++) {
-      if (!dataList[j].name) continue;
-      // If one string contains another, merge their heat into the higher frequency one
-      if (String(dataList[i].name).includes(String(dataList[j].name)) || String(dataList[j].name).includes(String(dataList[i].name))) {
-        dataList[i].value += dataList[j].value;
-        dataList[j].name = ""; // Mark for deletion
-      }
-    }
-  }
+  mergeSynonyms(dataList);
 
   // Even if AI provides data, we strictly slice to 20 words
   const data = dataList

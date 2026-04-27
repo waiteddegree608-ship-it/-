@@ -9,14 +9,15 @@
 - 🎨 **无边界拖拽画板与动态词云**：前端采用原生 DOM 与 ECharts 开发，支持多词云并发渲染与碰撞检测，鼠标自由拖拽、缩放，视觉体验拉满。
 - 🤖 **AI 驱动去伪存真**：摒弃传统爬虫只能提取标题的弱点，全面集成免费的 SiliconFlow 大语言模型，系统会自动让大模型对新闻事实进行真伪识别、可信度打分、并强制要求输出高品质的中文报告。
 - 🛡️ **智能防骚扰去重架构**：配备基于 MD5 数据指纹的去重机制，同一条新闻绝不重复发送。独特的「聚合打包」算法会在一轮扫描结束后，将多条情报浓缩为一份聚合邮件/Webhook发送。
+- 📁 **自动化情报存档与数据隔离**：架构上采用高度解耦的数据管理。关系型状态数据被外置存放到统一的 `data/dev.db` 中；每次 AI 处理后的词云、预警、和热点新闻，都会按功能以 JSON 日志的格式自动整理归档在 `data/hotspots/`、`data/alerts/` 和 `data/wordclouds/` 中。
 - ⚙️ **多维度时间控制滑块**：专门手写的非线性吸附滑块，支持在前端面板将任务监控频率和全局词云刷新频率极其方便地设置为 15分钟 到 7天 不等。
-- 🔧 **零门槛的系统管理控制台**：所有基础设定（包括 SMTP 配置、默认推送账号、API Key 配置等）均在前端提供可视化表单，“一次填入，持久生效”。
+- 🔧 **零门槛的系统管理控制台**：所有基础设定（包括 SMTP 配置、默认推送账号、API Key 配置等）均在前端提供可视化表单，“一次填入，持久生效”，配置会安全落地到后端的 `.env` 中。
 
 ## 🛠️ 技术栈
 
-- **前端**: React, Vite, TypeScript, ECharts, Lucide-React
-- **后端**: Express 5, TypeScript, NodeMailer, Node-Cron, Socket.io
-- **数据库**: Prisma ORM, SQLite
+- **前端**: React, Vite, TypeScript, ECharts, Lucide-React，组件化架构设计
+- **后端**: Express 5, TypeScript, NodeMailer, Node-Cron, Socket.io，按模块路由树隔离
+- **数据库**: Prisma ORM, SQLite (外部独立 data/ 挂载)
 - **核心组件**: Axios + Cheerio (DuckDuckGo Search 爬取协议适配)
 
 ## 🚀 快速启动
@@ -52,7 +53,7 @@ npm run dev
 ## ⚙️ 系统配置指南
 
 1. **AI API 密钥配置**：
-   在首次使用前，请确保在 `backend/config.json` 或环境变量中配置了您的硅基流动（SiliconFlow）API Key。这是底层进行新闻过滤与重写的核心动力。
+   在首次使用前，请确保在 `backend/.env` 环境变量中配置了您的硅基流动（SiliconFlow）API Key (`SILICONFLOW_API_KEY`)。这是底层进行新闻过滤与重写的核心动力。也可以直接将系统提供的 `.env.example` 重命名为 `.env` 并填入。
 2. **接收端与发件端配置**：
    点击前端页面右上角的**「管理面板」**，切换到**「设置」**标签页。您可以可视化地填入：
    - 您的默认 Webhook 接口
@@ -68,6 +69,3 @@ npm run dev
 - **关于词云的更新频率**：
   若在「词云」面板修改了“全局刷新频率”，请注意，涉及到核心 Node-Cron 的重启，建议您重启一次后端的 Node 进程以使新频率立刻挂载生效。
 
----
-
-*“让繁杂的互联网信息，变成清爽的专属情报助理。”*

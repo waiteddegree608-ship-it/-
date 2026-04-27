@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import config from './config';
-import apiRouter from './routes/api';
+import routes from './routes';
 import { initSocket } from './socket';
 import { initCron } from './services/cron';
 
@@ -12,7 +12,7 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
-app.use('/api', apiRouter);
+app.use('/api', routes);
 
 initSocket(server);
 initCron();
